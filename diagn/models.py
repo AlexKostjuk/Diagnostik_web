@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from datetime import date, time
+import datetime
 
 # Create your models here.
 class Diagn(models.Model):
@@ -12,3 +14,5 @@ class Diagn(models.Model):
     proces_load = models.IntegerField()
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     terminal_name = models.CharField(max_length=200)
+    date_comit = models.DateTimeField(default=date)
+    time_comit = models.DateTimeField(default=time)
