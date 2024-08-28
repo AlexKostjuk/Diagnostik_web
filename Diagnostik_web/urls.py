@@ -29,5 +29,7 @@ urlpatterns = [
     path('register/', user.views.Register_View.as_view()),
     path('api/authenticate/', user.views.authenticate_user),
     path('api/tobd/', diagn.views.to_bd),
+    path('select_date/', diagn.views.select_date, name='select_date' ),
+    path('plot_diagn_by_date/', diagn.views.plot_diagn_by_date, name='plot_diagn_by_date'),
 
 ]

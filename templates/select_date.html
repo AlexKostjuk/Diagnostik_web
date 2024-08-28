@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Вибір дати</title>
+</head>
+<body>
+    <h1>Виберіть дату для перегляду графіка</h1>
+    <form method="get" action="{% url 'plot_diagn_by_date' %}">
+        <label for="date">Дата:</label>
+        <input type="date" id="date" name="date" required>
+        <button type="submit">Показати графік</button>
+    </form>
+</body>
+</html>
