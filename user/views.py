@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from django.views import View
 from user.forms import LoginForm, RegisterForm
 from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 class Login_View(View):
 
@@ -56,3 +58,19 @@ class Register_View(View):
 @login_required
 def user_page (request):
    return render(request, 'user_page.html', context={'username' : request.user.username, 'email' : request.user.email})
+
+
+@csrf_exempt
+def authenticate_user(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            email = user.email
+            user_id = user.pk
+            return JsonResponse({'authenticated': True, 'email': email, 'user_id': user_id})
+        else:
+            return JsonResponse({'authenticated': False, 'email': '', 'user_id': ''})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
