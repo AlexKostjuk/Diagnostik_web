@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Графік</title>
+    <title>Графік температур</title>
 </head>
 <body>
-    <h1>Графік температури для {{ date }}</h1>
-    <img src="{% url 'plot_diagn_by_date' date=date %}" alt="Графік температури">
+    <h1>Графік температур для вибраної дати</h1>
+    <img src="data:image/png;base64,{{ image_base64 }}" alt="Графік температур">
+    <br><br>----<br>
+    <a href="{% url 'home' %}">Повернутися на головну</a><br>----<br>
     <br>
-    <a href="{% url 'select_date' %}">Повернутися</a>
+    <a href="{% url 'select_date' %}">Вибрати іншу дату</a><br>----<br>
 </body>
 </html>

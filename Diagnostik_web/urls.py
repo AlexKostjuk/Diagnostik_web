@@ -31,5 +31,6 @@ urlpatterns = [
     path('api/tobd/', diagn.views.to_bd),
     path('select_date/', diagn.views.select_date, name='select_date' ),
     path('plot_diagn_by_date/', diagn.views.plot_diagn_by_date, name='plot_diagn_by_date'),
+    path('', diagn.views.home, name='home'),
 
 ]

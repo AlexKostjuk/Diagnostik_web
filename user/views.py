@@ -55,9 +55,9 @@ class Register_View(View):
 
 
 
-@login_required
+@login_required(login_url='/login')
 def user_page (request):
-   return render(request, 'user_page.html', context={'username' : request.user.username, 'email' : request.user.email})
+   return render(request, 'select_date.html', context={'username' : request.user.username, 'email' : request.user.email})
 
 
 @csrf_exempt

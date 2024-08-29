@@ -1,6 +1,7 @@
 from django.http import JsonResponse
-from django.shortcuts import render
-
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+import base64
 from diagn.forms import DiagnForm
 from diagn.models import Diagn
 from django.views.decorators.csrf import csrf_exempt
@@ -10,6 +11,7 @@ import matplotlib.pyplot as plt
 import io
 from django.http import HttpResponse
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import matplotlib.dates as mdates
 
 # Create your views here.
 @csrf_exempt
@@ -33,31 +35,32 @@ def to_bd(request):
         else:
             return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-
+@login_required(login_url='/login')
 def select_date(request):
-    return render(request, 'select_date.html')
-
+    dates = Diagn.objects.filter(user_id=request.user).values_list('date_comit', flat=True).distinct()
+    return render(request, 'select_date.html', {'dates': dates})
 
 def plot_diagn_by_date(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("Ви повинні бути авторизовані, щоб переглядати дані.", status=401)
+
     date_str = request.GET.get('date')
     if not date_str:
         return HttpResponse("Дата не вказана", status=400)
 
     try:
-        date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        date = datetime.strptime(date_str, '%b. %d, %Y').date()
     except ValueError:
         return HttpResponse("Неправильний формат дати", status=400)
 
-    # Отримання даних з бази даних
-    data = Diagn.objects.filter(date_comit=date).order_by('time_comit')
+    data = Diagn.objects.filter(date_comit=date, user_id=request.user).order_by('time_comit')
     if not data:
         return HttpResponse("Дані для цієї дати не знайдено.", status=404)
 
-    times = [record.time_comit.strftime('%H:%M:%S') for record in data]
+    times = [datetime.combine(date, record.time_comit) for record in data]
     gpu_temps = [record.gpu_t for record in data]
     processor_temps = [record.processor_t for record in data]
 
-    # Створення графіка
     fig, ax = plt.subplots()
     ax.plot(times, gpu_temps, marker='o', label='GPU Temperature')
     ax.plot(times, processor_temps, marker='x', label='Processor Temperature')
@@ -67,11 +70,74 @@ def plot_diagn_by_date(request):
     ax.set_title(f'Температура GPU та процесора протягом часу для {date}')
     ax.legend()
 
-    # Збереження графіка в буфер пам'яті
-    buffer = io.BytesIO()
-    canvas = FigureCanvas(fig)
-    canvas.print_png(buffer)
-    plt.close(fig)  # Закрити фігуру, щоб звільнити пам'ять
+    ax.xaxis.set_major_locator(mdates.MinuteLocator(interval=30))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    plt.xticks(rotation=45)
 
-    # Повернення графіка як зображення PNG
-    return HttpResponse(buffer.getvalue(), content_type='image/png')
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    plt.close(fig)
+    buffer.seek(0)
+
+    image_png = buffer.getvalue()
+    buffer.close()
+
+    image_base64 = base64.b64encode(image_png).decode('utf-8')
+
+    return render(request, 'plot.html', {'image_base64': image_base64})
+
+
+    # if not request.user.is_authenticated:
+    #     return HttpResponse("Ви повинні бути авторизовані, щоб переглядати дані.", status=401)
+    #
+    # date_str = request.GET.get('date')
+    # if not date_str:
+    #     return HttpResponse("Дата не вказана", status=400)
+    #
+    # try:
+    #     # Використання формату з місяцем у скороченій формі (Aug. 28, 2024)
+    #     date = datetime.strptime(date_str, '%b. %d, %Y').date()
+    # except ValueError:
+    #     return HttpResponse("Неправильний формат дати", status=400)
+    #
+    # # Отримання даних з бази даних тільки для авторизованого користувача
+    # data = Diagn.objects.filter(date_comit=date, user_id=request.user).order_by('time_comit')
+    # if not data:
+    #     return HttpResponse("Дані для цієї дати не знайдено.", status=404)
+    #
+    # times = [datetime.combine(date, record.time_comit) for record in data]
+    # gpu_temps = [record.gpu_t for record in data]
+    # processor_temps = [record.processor_t for record in data]
+    #
+    # # Створення графіка
+    # fig, ax = plt.subplots()
+    # ax.plot(times, gpu_temps, marker='o', label='GPU Temperature')
+    # ax.plot(times, processor_temps, marker='x', label='Processor Temperature')
+    #
+    # ax.set_xlabel('Час')
+    # ax.set_ylabel('Температура (°C)')
+    # ax.set_title(f'Температура GPU та процесора протягом часу для {date}')
+    # ax.legend()
+    #
+    # # Налаштування формату осі X для розбиття на інтервали по 30 хвилин
+    # ax.xaxis.set_major_locator(mdates.MinuteLocator(interval=30))
+    # ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    #
+    # # Нахил підписів на осі X для кращої читабельності
+    # plt.xticks(rotation=45)
+    #
+    # # Збереження графіка в буфер пам'яті
+    # buffer = io.BytesIO()
+    # canvas = FigureCanvas(fig)
+    # canvas.print_png(buffer)
+    # plt.close(fig)  # Закрити фігуру, щоб звільнити пам'ять
+    #
+    # # Повернення графіка як зображення PNG
+    # return HttpResponse(buffer.getvalue(), content_type='image/png')
+    #
+
+
+
+
+def home(request):
+    return render(request, 'home.html')

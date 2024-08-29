@@ -7,8 +7,14 @@
     <h1>Виберіть дату для перегляду графіка</h1>
     <form method="get" action="{% url 'plot_diagn_by_date' %}">
         <label for="date">Дата:</label>
-        <input type="date" id="date" name="date" required>
+        <select id="date" name="date" required>
+            {% for date in dates %}
+                <option value="{{ date }}">{{ date }}</option>
+            {% endfor %}
+        </select>
         <button type="submit">Показати графік</button>
     </form>
+    <br>
+    <a href="{% url 'home' %}">Повернутися на головну</a>
 </body>
 </html>
