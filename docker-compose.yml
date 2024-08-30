@@ -2,7 +2,7 @@ services:
   web:
     build: .
     ports:
-      - 8080:8080
+      - 8000:8000
     environment:
       - DB_HOST=pg_db
       - DB_USER=Admin1

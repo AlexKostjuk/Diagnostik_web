@@ -23,7 +23,7 @@ class Login_View(View):
                                 password=form.cleaned_data['password'])
             if user is not None:
                 login(request, user)
-                return redirect('/user/')
+                return redirect('/')
             context['error'] = 'invalid username or pasword'
             context['form'] = LoginForm()
             return render(request, 'login.html', context=context)
