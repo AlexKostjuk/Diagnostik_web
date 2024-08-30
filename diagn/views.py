@@ -87,55 +87,6 @@ def plot_diagn_by_date(request):
     return render(request, 'plot.html', {'image_base64': image_base64})
 
 
-    # if not request.user.is_authenticated:
-    #     return HttpResponse("Ви повинні бути авторизовані, щоб переглядати дані.", status=401)
-    #
-    # date_str = request.GET.get('date')
-    # if not date_str:
-    #     return HttpResponse("Дата не вказана", status=400)
-    #
-    # try:
-    #     # Використання формату з місяцем у скороченій формі (Aug. 28, 2024)
-    #     date = datetime.strptime(date_str, '%b. %d, %Y').date()
-    # except ValueError:
-    #     return HttpResponse("Неправильний формат дати", status=400)
-    #
-    # # Отримання даних з бази даних тільки для авторизованого користувача
-    # data = Diagn.objects.filter(date_comit=date, user_id=request.user).order_by('time_comit')
-    # if not data:
-    #     return HttpResponse("Дані для цієї дати не знайдено.", status=404)
-    #
-    # times = [datetime.combine(date, record.time_comit) for record in data]
-    # gpu_temps = [record.gpu_t for record in data]
-    # processor_temps = [record.processor_t for record in data]
-    #
-    # # Створення графіка
-    # fig, ax = plt.subplots()
-    # ax.plot(times, gpu_temps, marker='o', label='GPU Temperature')
-    # ax.plot(times, processor_temps, marker='x', label='Processor Temperature')
-    #
-    # ax.set_xlabel('Час')
-    # ax.set_ylabel('Температура (°C)')
-    # ax.set_title(f'Температура GPU та процесора протягом часу для {date}')
-    # ax.legend()
-    #
-    # # Налаштування формату осі X для розбиття на інтервали по 30 хвилин
-    # ax.xaxis.set_major_locator(mdates.MinuteLocator(interval=30))
-    # ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
-    #
-    # # Нахил підписів на осі X для кращої читабельності
-    # plt.xticks(rotation=45)
-    #
-    # # Збереження графіка в буфер пам'яті
-    # buffer = io.BytesIO()
-    # canvas = FigureCanvas(fig)
-    # canvas.print_png(buffer)
-    # plt.close(fig)  # Закрити фігуру, щоб звільнити пам'ять
-    #
-    # # Повернення графіка як зображення PNG
-    # return HttpResponse(buffer.getvalue(), content_type='image/png')
-    #
-
 
 
 
